@@ -1,5 +1,6 @@
 require 'csv'
 require_relative './scraper/list_scraper'
+require_relative './scraper/csv_writer'
 
 class Scraper
 
@@ -8,7 +9,7 @@ class Scraper
   end
 
   def run
-    write_listings_to_csv
+    csv_writer.write
   end
 
 private
@@ -18,15 +19,7 @@ private
     @scraped_listings ||= ListScraper.new(url).run
   end
 
-  def write_listings_to_csv
-    CSV.open(csv_filename, "wb") do |csv|
-      scraped_listings.each do |event|
-        csv << event.to_csv
-      end
-    end
-  end
-
-  def csv_filename
-    "tmp/listings_#{Time.now.to_i}.csv"
+  def csv_writer
+    CSVWriter.new(scraped_listings)
   end
 end
