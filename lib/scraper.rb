@@ -21,13 +21,7 @@ private
   def write_listings_to_csv
     CSV.open(csv_filename, "wb") do |csv|
       scraped_listings.each do |event|
-        csv << [
-          event.artist,
-          event.town,
-          event.venue,
-          event.date,
-          event.price
-        ]
+        csv << event.to_csv
       end
     end
   end
