@@ -1,4 +1,5 @@
 require 'mechanize'
+require_relative './event'
 
 class ListScraper
   def initialize(url)
@@ -27,13 +28,5 @@ private
 
   def agent
     @scraper ||= Mechanize.new
-  end
-
-  class Event < Struct.new(
-    :artist,
-    :town,
-    :venue,
-    :date,
-    :price)
   end
 end
