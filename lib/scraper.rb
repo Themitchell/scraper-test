@@ -1,18 +1,19 @@
-require 'mechanize'
+require_relative './scraper/list_scraper'
 
 class Scraper
+
   def initialize(url)
     @url = url
   end
 
   def run
-    agent.links_with(class: 'event_link')
+    scraped_listings
   end
 
 private
   attr_reader :url
 
-  def agent
-    @scraper ||= Mechanize.new.get(url)
+  def scraped_listings
+    @scraped_listings ||= ListScraper.new(url).run
   end
 end
