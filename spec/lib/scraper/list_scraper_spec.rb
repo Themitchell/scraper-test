@@ -3,25 +3,33 @@ require_relative '../../../lib/scraper/list_scraper'
 RSpec.describe ListScraper do
 
   let(:request_url) { 'http://www.wegottickets.com/searchresults/all' }
-  let(:link1) { double(:link) }
-  let(:link2) { double(:link) }
-  let(:links) { [link1, link2]}
-  let(:page)  { double(:page) }
+  let(:listing_url) { 'http://www.wegottickets.com/event/312261' }
   subject(:scraper) { ListScraper.new(request_url) }
 
-  let(:mechanize) { double(:mechanize) }
-
   before do
-    expect(Mechanize).to receive(:new).and_return(mechanize)
-    expect(mechanize).to receive(:get).with(request_url).and_return(page)
-    expect(page).to receive(:links_with).and_return(links)
+    FakeWeb.register_uri(
+      :get,
+      request_url,
+      body: File.read(File.join('spec', 'support', 'example_listing.html')),
+      content_type: 'text/html'
+    )
+
+    FakeWeb.register_uri(
+      :get,
+      listing_url,
+      body: File.read(File.join('spec', 'support', 'example_individual_listing.html')),
+      content_type: 'text/html'
+    )
   end
 
-  it 'creates a scraper object' do
-    scraper.run
-  end
+  it 'returns a list of event objects' do
+    events = scraper.run
 
-  it 'returns a list of page links for individual listings' do
-    expect(scraper.run).to eq(links)
+    expect(events.size).to eq(1)
+    expect(events.first.artist).to eq('ALVIN YOUNGBLOOD HART')
+    expect(events.first.venue).to eq('Pier')
+    expect(events.first.town).to eq('WORTHING : ')
+    expect(events.first.date).to eq('WED 5TH AUG, 2015 Doors open 7pm Show starts 8pm')
+    expect(events.first.price).to eq('Â£16.50')
   end
 end

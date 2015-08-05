@@ -6,13 +6,34 @@ class ListScraper
   end
 
   def run
-    agent.links_with(class: 'event_link')
+    page = agent.get(url)
+
+    page.search('.ListingOuter').map do |listing|
+      listing_link = listing.search('.event_link').first
+      listing_page = agent.get(listing_link[:href])
+
+      Event.new(
+        listing_link.text,
+        listing.search('.venuetown').text,
+        listing.search('.venuename').text,
+        listing_page.search('.VenueDetails h2').text,
+        listing.search('.searchResultsPrice strong').text
+      )
+    end
   end
 
 private
   attr_reader :url
 
   def agent
-    @scraper ||= Mechanize.new.get(url)
+    @scraper ||= Mechanize.new
+  end
+
+  class Event < Struct.new(
+    :artist,
+    :town,
+    :venue,
+    :date,
+    :price)
   end
 end
