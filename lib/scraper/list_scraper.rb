@@ -7,19 +7,21 @@ class ListScraper
   end
 
   def run
-    page = agent.get(url)
+    listing_pages.inject([]) do |events, page|
+      subset_of_events = page.search('.ListingOuter').map do |event_element|
+        event_link = event_element.search('.event_link').first
+        event_page = agent.get(event_link[:href])
 
-    page.search('.ListingOuter').map do |listing|
-      listing_link = listing.search('.event_link').first
-      listing_page = agent.get(listing_link[:href])
+        Event.new(
+          event_link.text,
+          event_element.search('.venuetown').text,
+          event_element.search('.venuename').text,
+          event_page.search('.VenueDetails h2').text,
+          event_element.search('.searchResultsPrice strong').text
+        )
+      end
 
-      Event.new(
-        listing_link.text,
-        listing.search('.venuetown').text,
-        listing.search('.venuename').text,
-        listing_page.search('.VenueDetails h2').text,
-        listing.search('.searchResultsPrice strong').text
-      )
+      events += subset_of_events
     end
   end
 
@@ -27,6 +29,31 @@ private
   attr_reader :url
 
   def agent
-    @scraper ||= Mechanize.new
+    @agent ||= Mechanize.new
+  end
+
+  def start_page
+    @start_page ||= agent.get(url)
+  end
+
+  def next_page_link(page)
+    page.search('.nextlink').first
+  end
+
+  def get_page(url)
+    agent.get(url)
+  end
+
+  def listing_pages
+    return @listing_pages if @listing_pages
+
+    @listing_pages ||= [start_page]
+
+    loop do
+      break unless next_page_link(@listing_pages.last)
+      @listing_pages << get_page(next_page_link(@listing_pages.last)[:href])
+    end
+
+    @listing_pages
   end
 end
