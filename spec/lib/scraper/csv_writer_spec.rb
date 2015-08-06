@@ -3,8 +3,7 @@ require_relative '../../../lib/scraper/csv_writer'
 
 RSpec.describe CSVWriter do
 
-
-  let(:event) { double(:event, to_csv: []) }
+  let(:event) { double(:event, to_csv: ['some', 'data', 'here']) }
   subject(:csv_writer) { CSVWriter.new([event]) }
 
   it 'creates a csv file with the timestamp in the name' do

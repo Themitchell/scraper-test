@@ -1,3 +1,5 @@
+require 'csv'
+
 class CSVWriter
 
   def initialize(events)
